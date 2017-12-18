@@ -85,7 +85,7 @@ class WC_Settings_Tab_Shift8 {
                 'type' => 'select',
                 'desc' => __( 'Select which payment gateway to disable if a postal / zip code matches', 'woocommerce-settings-tab-shift8' ),
                 'options' => $gateway_list,
-                'css' => 'max-width:100px;',
+                'css' => 'width:150px;height:30px;',
                 'id'   => 'wc_settings_tab_shift8_wooblock_gateway'
             ),
             'postals' => array(
