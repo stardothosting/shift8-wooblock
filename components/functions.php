@@ -4,41 +4,6 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
 
-// Function to initialize & check for session
-function shift8_wooblock_init() {
-    global $woocommerce;
-
-    // Grab the encryption key (which is wp_salt auth key)
-    $encryption_key = wp_salt('auth');
-
-    // Initialize only if enabled
-    if (shift8_wooblock_check_options()) {
-
-        // If the session isnt set
-        if (!isset($_COOKIE['shift8_wb'])) {
-            $user_postal = !empty($woocommerce->customer->get_shipping_postcode()) ? shift8_wooblock_sanitize($woocommerce->customer->get_shipping_postcode()) : shift8_wooblock_sanitize($woocommerce->customer->get_billing_postcode());
-            $cookie_data = shift8_wooblock_encrypt($encryption_key, $user_postal . '_' . $woocommerce->customer->get_email());
-            setcookie('shift8_wb', $cookie_data, strtotime('+365 day'), '/');
-
-        // If the cookie is set
-        } else {
-            // if session is set, validate it and remove if not valid
-            $cookie_data = explode('_', shift8_wooblock_decrypt($encryption_key, $_COOKIE['shift8_wb']));
-
-            // If there's an error set in the cookie, clear and then set a temp cookie that expires sooner
-            if (esc_attr($cookie_data[1]) == 'error') {
-                // Unset the existing session, re-set it with a shorter expiration time
-                clear_shift8_wooblock_cookie();
-                // Set the ip address but clear any GeoLocation values for now
-                $cookie_newdata = shift8_wooblock_encrypt($encryption_key, esc_attr($cookie_data[0]) . '_ignore_ignore');
-                setcookie('shift8_wb', $cookie_newdata, strtotime('+1 hour'), '/');
-
-            }
-        }
-    }
-}
-add_action('woocommerce_checkout_init', 'shift8_wooblock_init', 10);
-
 // Function to encrypt session data
 function shift8_wooblock_encrypt($key, $payload) {
     if (!empty($key) && !empty($payload)) {
@@ -70,6 +35,7 @@ function clear_shift8_wooblock_cookie() {
 add_filter( 'woocommerce_available_payment_gateways', 'shift8_wooblock_payment_gateways_process' );
 function shift8_wooblock_payment_gateways_process( $available_gateways ) {
     global $woocommerce;
+     $encryption_key = wp_salt('auth');
 
     if ( is_admin() ) {
         return $available_gateways;
@@ -83,9 +49,11 @@ function shift8_wooblock_payment_gateways_process( $available_gateways ) {
         $postal_codes = explode("\n", esc_attr( shift8_wooblock_sanitize(get_option('wc_settings_tab_shift8_wooblock_postals') )));
         $user_postal = !empty($woocommerce->customer->get_shipping_postcode()) ? shift8_wooblock_sanitize($woocommerce->customer->get_shipping_postcode()) : shift8_wooblock_sanitize($woocommerce->customer->get_billing_postcode());
 
-        // If postal code matches 
+        // If postal code matches
         if (in_array($user_postal, $postal_codes) && isset($available_gateways[$gateway_remove])) {
             unset( $available_gateways[$gateway_remove]);
+            $cookie_data = shift8_wooblock_encrypt($encryption_key, $user_postal . '_' . $woocommerce->customer->get_email());
+            setcookie('shift8_wb', $cookie_data, strtotime('+30 day'), '/');
         } else if (isset($_COOKIE['shift8_wb'])) {
             $cookie_data = explode('_', shift8_wooblock_decrypt($encryption_key, $_COOKIE['shift8_wb']));
             if (esc_attr($cookie_data[1]) != 'error') {
@@ -99,7 +67,7 @@ function shift8_wooblock_payment_gateways_process( $available_gateways ) {
 // Validate admin options
 function shift8_wooblock_check_options() {
     // If enabled is not set
-    if(esc_attr( get_option('wc_settings_tab_shift8_wooblock_enable') ) == 'no') { 
+    if(esc_attr( get_option('wc_settings_tab_shift8_wooblock_enable') ) == 'no') {
         return false;
     }
     // If gateway is not set
