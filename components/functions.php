@@ -85,11 +85,11 @@ function shift8_wooblock_payment_gateways_process( $available_gateways ) {
 
         // If postal code matches 
         if (in_array($user_postal, $postal_codes) && isset($available_gateways[$gateway_remove])) {
-            unset( $available_gateways['paypal']);
+            unset( $available_gateways[$gateway_remove]);
         } else if (isset($_COOKIE['shift8_wb'])) {
             $cookie_data = explode('_', shift8_wooblock_decrypt($encryption_key, $_COOKIE['shift8_wb']));
             if (esc_attr($cookie_data[1]) != 'error') {
-				unset( $available_gateways['paypal']);
+				unset( $available_gateways[$gateway_remove]);
 			}
         }
     }
