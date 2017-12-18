@@ -107,3 +107,14 @@ class WC_Settings_Tab_Shift8 {
 }
 
 WC_Settings_Tab_Shift8::init();
+
+function validate_banlength_field($key){
+    var_dump($key);
+  if( is_numeric($value) ){
+    // validated
+    return $value;
+  }else{
+      //not validated
+      add_settings_error($key, 'settings_updated', 'Value is empty', 'error');
+  }
+}

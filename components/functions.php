@@ -18,7 +18,7 @@ function shift8_wooblock_init() {
         if (!isset($_COOKIE['shift8_wb'])) {
             $user_postal = !empty($woocommerce->customer->get_shipping_postcode()) ? shift8_wooblock_sanitize($woocommerce->customer->get_shipping_postcode()) : shift8_wooblock_sanitize($woocommerce->customer->get_billing_postcode());
             $cookie_data = shift8_wooblock_encrypt($encryption_key, $user_postal . '_' . $woocommerce->customer->get_email());
-            setcookie('shift8_wb', $cookie_data, strtotime('+30 day'), '/');
+            setcookie('shift8_wb', $cookie_data, strtotime('+365 day'), '/');
 
         // If the cookie is set
         } else {
