@@ -16,7 +16,7 @@ function shift8_wooblock_init() {
 
         // If the session isnt set
         if (!isset($_COOKIE['shift8_wb'])) {
-            $user_postal = !empty($woocommerce->customer->get_shipping_postcode()) ? shift8_wooblock_sanitize($woocommerce->customer->get_shipping_postcode()) : shift8_wooblock_sanitize($woocommerce->customer->get_postcode());
+            $user_postal = !empty($woocommerce->customer->get_shipping_postcode()) ? shift8_wooblock_sanitize($woocommerce->customer->get_shipping_postcode()) : shift8_wooblock_sanitize($woocommerce->customer->get_billing_postcode());
             $cookie_data = shift8_wooblock_encrypt($encryption_key, $user_postal . '_' . $woocommerce->customer->get_email());
             setcookie('shift8_wb', $cookie_data, strtotime('+30 day'), '/');
 
@@ -37,7 +37,7 @@ function shift8_wooblock_init() {
         }
     }
 }
-add_action('init', 'shift8_wooblock_init', 1);
+add_action('woocommerce_checkout_init', 'shift8_wooblock_init', 10);
 
 // Function to encrypt session data
 function shift8_wooblock_encrypt($key, $payload) {
@@ -81,7 +81,7 @@ function shift8_wooblock_payment_gateways_process( $available_gateways ) {
         // Pull the settings for processing
         $gateway_remove = esc_attr( get_option('wc_settings_tab_shift8_wooblock_gateway') );
         $postal_codes = explode("\n", esc_attr( shift8_wooblock_sanitize(get_option('wc_settings_tab_shift8_wooblock_postals') )));
-        $user_postal = !empty($woocommerce->customer->get_shipping_postcode()) ? shift8_wooblock_sanitize($woocommerce->customer->get_shipping_postcode()) : shift8_wooblock_sanitize($woocommerce->customer->get_postcode());
+        $user_postal = !empty($woocommerce->customer->get_shipping_postcode()) ? shift8_wooblock_sanitize($woocommerce->customer->get_shipping_postcode()) : shift8_wooblock_sanitize($woocommerce->customer->get_billing_postcode());
 
         // If postal code matches 
         if (in_array($user_postal, $postal_codes) && isset($available_gateways[$gateway_remove])) {
