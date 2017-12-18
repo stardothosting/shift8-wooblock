@@ -4,6 +4,41 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
 
+// Function to initialize & check for session
+function shift8_wooblock_init() {
+    global $woocommerce;
+
+    // Grab the encryption key (which is wp_salt auth key)
+    $encryption_key = wp_salt('auth');
+
+    // Initialize only if enabled
+    if (shift8_wooblock_check_options()) {
+
+        // If the session isnt set
+        if (!isset($_COOKIE['shift8_wb'])) {
+            $user_postal = !empty($woocommerce->customer->get_shipping_postcode()) ? shift8_wooblock_sanitize($woocommerce->customer->get_shipping_postcode()) : shift8_wooblock_sanitize($woocommerce->customer->get_postcode());
+            $cookie_data = shift8_wooblock_encrypt($encryption_key, $user_postal . '_' . $woocommerce->customer->get_email());
+            setcookie('shift8_wb', $cookie_data, strtotime('+30 day'), '/');
+
+        // If the cookie is set
+        } else {
+            // if session is set, validate it and remove if not valid
+            $cookie_data = explode('_', shift8_wooblock_decrypt($encryption_key, $_COOKIE['shift8_wb']));
+
+            // If there's an error set in the cookie, clear and then set a temp cookie that expires sooner
+            if (esc_attr($cookie_data[1]) == 'error') {
+                // Unset the existing session, re-set it with a shorter expiration time
+                clear_shift8_wooblock_cookie();
+                // Set the ip address but clear any GeoLocation values for now
+                $cookie_newdata = shift8_wooblock_encrypt($encryption_key, esc_attr($cookie_data[0]) . '_ignore_ignore');
+                setcookie('shift8_wb', $cookie_newdata, strtotime('+1 hour'), '/');
+
+            }
+        }
+    }
+}
+add_action('init', 'shift8_wooblock_init', 1);
+
 // Function to encrypt session data
 function shift8_wooblock_encrypt($key, $payload) {
     if (!empty($key) && !empty($payload)) {
@@ -45,14 +80,17 @@ function shift8_wooblock_payment_gateways_process( $available_gateways ) {
 
         // Pull the settings for processing
         $gateway_remove = esc_attr( get_option('wc_settings_tab_shift8_wooblock_gateway') );
-        $postal_codes = explode("\n", shift8_wooblock_sanitize(esc_attr( get_option('wc_settings_tab_shift8_wooblock_postals') )));
-        $user_postal = shift8_wooblock_sanitize($woocommerce->customer->get_shipping_postal_code());
+        $postal_codes = explode("\n", esc_attr( shift8_wooblock_sanitize(get_option('wc_settings_tab_shift8_wooblock_postals') )));
+        $user_postal = !empty($woocommerce->customer->get_shipping_postcode()) ? shift8_wooblock_sanitize($woocommerce->customer->get_shipping_postcode()) : shift8_wooblock_sanitize($woocommerce->customer->get_postcode());
 
         // If postal code matches 
         if (in_array($user_postal, $postal_codes) && isset($available_gateways[$gateway_remove])) {
-            $encryption_key = wp_salt('auth');
-            $cookie_data = shift8_geoip_encrypt($encryption_key, $ip_address . '_' . $query->lat . '_' . $query->lon . '_' . $query->countryCode);
-            unset( $available_gateways[$gateway_remove]);
+            unset( $available_gateways['paypal']);
+        } else if (isset($_COOKIE['shift8_wb'])) {
+            $cookie_data = explode('_', shift8_wooblock_decrypt($encryption_key, $_COOKIE['shift8_wb']));
+            if (esc_attr($cookie_data[1]) != 'error') {
+				unset( $available_gateways['paypal']);
+			}
         }
     }
     return $available_gateways;
@@ -61,7 +99,9 @@ function shift8_wooblock_payment_gateways_process( $available_gateways ) {
 // Validate admin options
 function shift8_wooblock_check_options() {
     // If enabled is not set
-    if(esc_attr( get_option('wc_settings_tab_shift8_wooblock_enable') ) != '1') return false;
+    if(esc_attr( get_option('wc_settings_tab_shift8_wooblock_enable') ) == 'no') { 
+        return false;
+    }
     // If gateway is not set
     if(empty(esc_attr( get_option('wc_settings_tab_shift8_wooblock_gateway') ) ) ) return false;
     // If postal codes are blank
@@ -72,7 +112,7 @@ function shift8_wooblock_check_options() {
 
 // Sanitize postal field
 function shift8_wooblock_sanitize($sanitize_field) {
-    $sanitize_field = preg_replace('/\s+/', '', $sanitize_field);
+    $sanitize_field = str_replace(' ', '', $sanitize_field);
     $sanitize_field = strtoupper($sanitize_field);
     return $sanitize_field;
 }

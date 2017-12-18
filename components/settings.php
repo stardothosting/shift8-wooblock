@@ -63,8 +63,7 @@ class WC_Settings_Tab_Shift8 {
         $gatway_list = array();
         foreach ($available_gateways as $gateway) {
             if ($gateway->enabled == 'yes') {
-                var_dump('hihihi');
-                $gateway_list[] = $gateway->id;
+                $gateway_list[$gateway->id] = $gateway->id; 
             }
         }
 
