@@ -46,9 +46,8 @@ function shift8_wooblock_payment_gateways_process( $available_gateways ) {
 
         // Pull the settings for processing
         $gateway_remove = esc_attr( get_option('wc_settings_tab_shift8_wooblock_gateway') );
-        $postal_codes = explode("\n", esc_attr( shift8_wooblock_sanitize(get_option('wc_settings_tab_shift8_wooblock_postals') )));
+        $postal_codes = explode(" ", esc_attr( shift8_wooblock_sanitize(get_option('wc_settings_tab_shift8_wooblock_postals') )));
         $user_postal = !empty($woocommerce->customer->get_shipping_postcode()) ? shift8_wooblock_sanitize($woocommerce->customer->get_shipping_postcode()) : shift8_wooblock_sanitize($woocommerce->customer->get_billing_postcode());
-
         // If postal code matches
         if (in_array($user_postal, $postal_codes) && isset($available_gateways[$gateway_remove])) {
             unset( $available_gateways[$gateway_remove]);
@@ -82,5 +81,6 @@ function shift8_wooblock_check_options() {
 function shift8_wooblock_sanitize($sanitize_field) {
     $sanitize_field = str_replace(' ', '', $sanitize_field);
     $sanitize_field = strtoupper($sanitize_field);
+	$sanitize_field = trim(preg_replace('/\s+/', ' ', $sanitize_field));
     return $sanitize_field;
 }
