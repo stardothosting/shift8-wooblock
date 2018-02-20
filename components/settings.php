@@ -81,17 +81,25 @@ class WC_Settings_Tab_Shift8 {
                 'id'   => 'wc_settings_tab_shift8_wooblock_enable'
             ),
             'gateway' => array(
-                'name' => __( 'Gateway to Remove', 'woocommerce-settings-tab-shift8' ),
-                'type' => 'select',
-                'desc' => __( 'Select which payment gateway to disable if a postal / zip code matches', 'woocommerce-settings-tab-shift8' ),
+                'name' => __( 'Gateways to Remove', 'woocommerce-settings-tab-shift8' ),
+                'type' => 'multiselect',
+                'desc' => __( 'Select multiple payment gateways to disable if a postal / zip code matches', 'woocommerce-settings-tab-shift8' ),
                 'options' => $gateway_list,
                 'css' => 'width:150px;height:40px;',
                 'id'   => 'wc_settings_tab_shift8_wooblock_gateway'
             ),
+            'daysremember' => array(
+                'name' => __( 'Ban Length (days)', 'woocommerce-settings-tab-shift8' ),
+                'type' => 'number',
+                'css'  => 'width:150px;height:40px;',
+                'desc' => __( 'Enter the number of days for the end-user\'s cookie to remember the ban' ),
+                'id'   => 'wc_settings_tab_shift8_wooblock_daysremember',
+                'default' => '30'
+            ),
             'postals' => array(
                 'name' => __( 'Postal Codes', 'woocommerce-settings-tab-shift8' ),
                 'type' => 'textarea',
-				'css'  => 'width:500px;height:250px;',
+                'css'  => 'width:500px;height:250px;',
                 'desc' => __( 'Enter a list of postal / zip codes to block, one per line. Spaces and case will be stripped out when pattern matching.' ),
                 'id'   => 'wc_settings_tab_shift8_wooblock_postals'
             ),
@@ -107,14 +115,3 @@ class WC_Settings_Tab_Shift8 {
 }
 
 WC_Settings_Tab_Shift8::init();
-
-function validate_banlength_field($key){
-    var_dump($key);
-  if( is_numeric($value) ){
-    // validated
-    return $value;
-  }else{
-      //not validated
-      add_settings_error($key, 'settings_updated', 'Value is empty', 'error');
-  }
-}

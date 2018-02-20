@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Shift8 Woocommerce Postal Blocker
  * Plugin URI: https://github.com/stardothosting/shift8-wooblock
- * Description: Plugin that allows you to input a list of postal / zip codes to block from ordering on your Woocommerce site. You can determine if you want to hide a payment gateway (i.e. credit card) or an outright block.
- * Version: 1.01
+ * Description: Plugin that allows you to input a list of postal / zip codes to block from ordering on your Woocommerce site. You can determine if you want to hide multiple payment gateways (i.e. paypal or stripe) if the postal or zip code matches during the checkout process. The gateway is removed during an ajax post seamlessly. You can also define the number of days to "Block" the payment gateway, defined as a browser cookie.
+ * Version: 1.02
  * Author: Shift8 Web 
  * Author URI: https://www.shift8web.ca
  * 
