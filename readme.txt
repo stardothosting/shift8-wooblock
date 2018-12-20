@@ -3,8 +3,8 @@
 * Donate link: https://www.shift8web.ca
 * Tags: woocommerce, wordpress, block, blacklist, woocommerce blacklist, postal, zip, postal code, zip code, zipcode, postalcode
 * Requires at least: 3.0.1
-* Tested up to: 4.9
-* Stable tag: 1.03
+* Tested up to: 5.0.2
+* Stable tag: 1.04
 * License: GPLv3
 * License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -56,3 +56,6 @@ You should add a postal code (dont worry about spaces like L0L 0L0 versus L0L0L0
 
 = 1.03 =
 * Loading admin js file correctly now
+
+= 1.04 =
+* Wordpress 5 compatibility
